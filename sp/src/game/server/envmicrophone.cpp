@@ -77,6 +77,13 @@ BEGIN_DATADESC( CEnvMicrophone )
 	DEFINE_OUTPUT(m_OnRoutedSound, "OnRoutedSound" ),
 	DEFINE_OUTPUT(m_OnHeardSound, "OnHeardSound" ),
 
+	// KALI: Our stuff! Tell me what ur doing before modifying please :3
+	DEFINE_KEYFIELD(m_flMinimumVolume, FIELD_FLOAT, "MinimumVolume"),
+	DEFINE_KEYFIELD(m_flMaximumVolume, FIELD_FLOAT, "MaximumVolume"),
+
+	DEFINE_INPUTFUNC(FIELD_FLOAT, "SetMinimumVolume", InputSetMinimumVolume),
+	DEFINE_INPUTFUNC(FIELD_FLOAT, "SetMaximumVolume", InputSetMaximumVolume),
+
 END_DATADESC()
 
 
@@ -117,8 +124,9 @@ void CEnvMicrophone::Spawn(void)
 	{
 		//
 		// Avoid a divide by zero in CanHearSound.
+		// KALI: Changed from 1 to 0.001f because why the hell would you make it so noticeable?
 		//
-		m_flSensitivity = 1;
+		m_flSensitivity = 0.00001f;
 	}
 	else if (m_flSensitivity > 10)
 	{
@@ -305,6 +313,24 @@ void CEnvMicrophone::InputSetChannel( inputdata_t &inputdata )
 #endif
 
 //-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : &inputdata - 
+//-----------------------------------------------------------------------------
+void CEnvMicrophone::InputSetMinimumVolume(inputdata_t& inputdata)
+{
+	m_flMinimumVolume = inputdata.value.Float();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : &inputdata - 
+//-----------------------------------------------------------------------------
+void CEnvMicrophone::InputSetMaximumVolume(inputdata_t& inputdata)
+{
+	m_flMaximumVolume = inputdata.value.Float();
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Checks whether this microphone can hear a given sound, and at what
 //			relative volume level.
 // Input  : pSound - Sound to test.
@@ -345,10 +371,15 @@ bool CEnvMicrophone::CanHearSound(CSound *pSound, float &flVolume)
 		return false;
 	}
 
-	if (flDistance <= pSound->Volume() * m_flSensitivity)
+	bool minimum = m_flMinimumVolume != -1; bool maximum = m_flMaximumVolume != -1;
+
+	if (flDistance <= pSound->Volume() * m_flSensitivity && (!minimum || pSound->Volume() > m_flMinimumVolume) && (!maximum || pSound->Volume() < m_flMaximumVolume))
 	{
 		flVolume = 1 - (flDistance / (pSound->Volume() * m_flSensitivity));
 		flVolume = clamp(flVolume, 0.f, 1.f);
+#ifdef DEBUG
+		Msg("HEARD! (--) psound->Volume(): %d (--) flVolume: %f\n", pSound->Volume(), flVolume);
+#endif
 		return true;
 	}
 

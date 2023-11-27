@@ -301,12 +301,26 @@ static const char *g_ppszRandomHeads[] =
 	"male_09.mdl",
 };
 
+static const char *g_ppszRandomHeadsMale[] =
+{
+	"male_01.mdl",
+	"male_02.mdl",
+	"male_03.mdl",
+	"male_04.mdl",
+	"male_05.mdl",
+	"male_06.mdl",
+	"male_07.mdl",
+	"male_08.mdl",
+	"male_09.mdl",
+};
+
 static const char *g_ppszModelLocs[] =
 {
 	"Group01",
 	"Group01",
 	"Group02",
 	"Group03%s",
+	"Group04",
 };
 
 #define IsExcludedHead( type, bMedic, iHead) false // see XBox codeline for an implementation
@@ -508,12 +522,26 @@ void CNPC_Citizen::PrecacheAllOfType( CitizenType_t type )
 		return;
 
 	int nHeads = ARRAYSIZE( g_ppszRandomHeads );
+	int nHeadsMale = ARRAYSIZE(g_ppszRandomHeadsMale);
 	int i;
-	for ( i = 0; i < nHeads; ++i )
+	if (m_Type == CT_COP)
 	{
-		if ( !IsExcludedHead( type, false, i ) )
+		for (i = 0; i < nHeadsMale; ++i)
 		{
-			PrecacheModel( CFmtStr( "models/Humans/%s/%s", (const char *)(CFmtStr(g_ppszModelLocs[m_Type], "")), g_ppszRandomHeads[i] ) );
+			if (!IsExcludedHead(type, false, i))
+			{
+				PrecacheModel(CFmtStr("models/Humans/%s/%s", (const char *)(CFmtStr(g_ppszModelLocs[m_Type], "")), g_ppszRandomHeadsMale[i]));
+			}
+		}
+	}
+	else
+	{
+		for (i = 0; i < nHeads; ++i)
+		{
+			if (!IsExcludedHead(type, false, i))
+			{
+				PrecacheModel(CFmtStr("models/Humans/%s/%s", (const char *)(CFmtStr(g_ppszModelLocs[m_Type], "")), g_ppszRandomHeads[i]));
+			}
 		}
 	}
 
@@ -524,6 +552,16 @@ void CNPC_Citizen::PrecacheAllOfType( CitizenType_t type )
 			if ( !IsExcludedHead( type, true, i ) )
 			{
 				PrecacheModel( CFmtStr( "models/Humans/%s/%s", (const char *)(CFmtStr(g_ppszModelLocs[m_Type], "m")), g_ppszRandomHeads[i] ) );
+			}
+		}
+	}
+	else if (m_Type == CT_COP)
+	{
+		for (i = 0; i < nHeads; ++i)
+		{
+			if (!IsExcludedHead(type, true, i))
+			{
+				PrecacheModel(CFmtStr("models/Humans/%s/%s", (const char *)(CFmtStr(g_ppszModelLocs[m_Type], "m")), g_ppszRandomHeadsMale[i]));
 			}
 		}
 	}
@@ -689,6 +727,7 @@ void CNPC_Citizen::SelectModel()
 		PrecacheAllOfType( CT_DOWNTRODDEN );
 		PrecacheAllOfType( CT_REFUGEE );
 		PrecacheAllOfType( CT_REBEL );
+		PrecacheAllOfType( CT_COP );
 	}
 
 	const char *pszModelName = NULL;
@@ -902,6 +941,9 @@ void CNPC_Citizen::SelectExpressionType()
 		break;
 	case CT_REBEL:
 		m_ExpressionType = (CitizenExpressionTypes_t)RandomInt( CIT_EXP_SCARED, CIT_EXP_ANGRY );
+		break;
+	case CT_COP:
+		m_ExpressionType = (CitizenExpressionTypes_t)RandomInt(CIT_EXP_SCARED, CIT_EXP_ANGRY);
 		break;
 
 	case CT_DEFAULT:

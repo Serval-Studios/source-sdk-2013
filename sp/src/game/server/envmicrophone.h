@@ -67,6 +67,8 @@ public:
 	void InputSetVolumeScale( inputdata_t &inputdata );
 	void InputSetChannel( inputdata_t &inputdata );
 #endif
+	void InputSetMinimumVolume(inputdata_t& inputdata);
+	void InputSetMaximumVolume(inputdata_t& inputdata);
 
 	DECLARE_DATADESC();
 
@@ -113,6 +115,10 @@ private:
 	COutputEvent m_OnHeardSound;		// Heard sound.
 
 	char		m_szLastSound[256];
+
+	// KALI: Again, this is sensitive! Tell me before modifying this!
+	float		m_flMinimumVolume;
+	float		m_flMaximumVolume;
 };
 
 #endif // ENVMICROPHONE_H

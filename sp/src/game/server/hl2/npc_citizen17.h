@@ -51,6 +51,7 @@ enum CitizenType_t
 	CT_DOWNTRODDEN,
 	CT_REFUGEE,
 	CT_REBEL,
+	CT_COP,
 	CT_UNIQUE
 };
 

@@ -91,3 +91,6 @@ sp/src/vgui2/*.pdb
 
 # Build support files
 sp/src/devtools/gcc9+support.o
+*.pdb
+sp/src/responserules/runtime/Debug/responserules.vcxproj.FileListAbsolute.txt
+*.recipe
