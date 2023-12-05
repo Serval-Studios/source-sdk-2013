@@ -377,9 +377,7 @@ bool CEnvMicrophone::CanHearSound(CSound *pSound, float &flVolume)
 	{
 		flVolume = 1 - (flDistance / (pSound->Volume() * m_flSensitivity));
 		flVolume = clamp(flVolume, 0.f, 1.f);
-#ifdef DEBUG
-		Msg("HEARD! (--) psound->Volume(): %d (--) flVolume: %f\n", pSound->Volume(), flVolume);
-#endif
+		DevMsg("HEARD! (--) psound->Volume(): %d (--) flVolume: %f\n", pSound->Volume(), flVolume);
 		return true;
 	}
 
