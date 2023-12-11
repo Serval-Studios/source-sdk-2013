@@ -81,7 +81,8 @@ public:
 			1.0f);
 
 		// We lerp from very accurate to inaccurate over time
-		VectorLerp(VECTOR_CONE_1DEGREES, VECTOR_CONE_6DEGREES, ramp, cone);
+		if (m_bSecondary) { VectorLerp(VECTOR_CONE_1DEGREES, VECTOR_CONE_12DEGREES, ramp, cone); }
+		else { VectorLerp(VECTOR_CONE_1DEGREES, VECTOR_CONE_6DEGREES, ramp, cone); }
 
 		return cone;
 	}
@@ -106,6 +107,7 @@ private:
 	float	m_flLastAttackTime;
 	float	m_flAccuracyPenalty;
 	int		m_nNumShotsFired;
+	bool	m_bSecondary;
 };
 
 
@@ -122,6 +124,7 @@ DEFINE_FIELD(m_flSoonestAttack, FIELD_TIME),
 DEFINE_FIELD(m_flLastAttackTime, FIELD_TIME),
 DEFINE_FIELD(m_flAccuracyPenalty, FIELD_FLOAT), //NOTENOTE: This is NOT tracking game time
 DEFINE_FIELD(m_nNumShotsFired, FIELD_INTEGER),
+DEFINE_FIELD(m_bSecondary, FIELD_BOOLEAN),
 
 END_DATADESC()
 
@@ -388,7 +391,8 @@ void CWeaponUSP::DryFire(bool secondary)
 //-----------------------------------------------------------------------------
 void CWeaponUSP::PrimaryAttack(void)
 {
-	if ((gpGlobals->curtime - m_flLastAttackTime) > 0.5f)
+	m_flFireRate = USP_REFIRE_TIME + 0.1f;
+	if ((gpGlobals->curtime - m_flLastAttackTime) > m_flFireRate)
 	{
 		m_nNumShotsFired = 0;
 	}
@@ -397,7 +401,7 @@ void CWeaponUSP::PrimaryAttack(void)
 		m_nNumShotsFired++;
 	}
 
-	m_flFireRate = USP_REFIRE_TIME + 0.1f;
+	m_bSecondary = false;
 	m_flLastAttackTime = gpGlobals->curtime;
 	m_flSoonestAttack = gpGlobals->curtime + USP_REFIRE_TIME;
 	CSoundEnt::InsertSound(SOUND_COMBAT, GetAbsOrigin(), SOUNDENT_VOLUME_PISTOL, 0.2, GetOwner());
@@ -501,7 +505,8 @@ void CWeaponUSP::PrimaryAttack(void)
 //-----------------------------------------------------------------------------
 void CWeaponUSP::SecondaryAttack(void)
 {
-	if ((gpGlobals->curtime - m_flLastAttackTime) > (0.5f / USP_RAPID))
+	m_flFireRate = (USP_REFIRE_TIME / USP_RAPID) + 0.1f;
+	if ((gpGlobals->curtime - m_flLastAttackTime) > m_flFireRate)
 	{
 		m_nNumShotsFired = 0;
 	}
@@ -510,7 +515,7 @@ void CWeaponUSP::SecondaryAttack(void)
 		m_nNumShotsFired++;
 	}
 
-	m_flFireRate = (USP_REFIRE_TIME / USP_RAPID) + 0.1f;
+	m_bSecondary = true;
 	m_flLastAttackTime = gpGlobals->curtime;
 	m_flSoonestAttack = gpGlobals->curtime + (USP_REFIRE_TIME / USP_RAPID);
 	CSoundEnt::InsertSound(SOUND_COMBAT, GetAbsOrigin(), SOUNDENT_VOLUME_PISTOL, 0.2, GetOwner());
@@ -603,7 +608,7 @@ void CWeaponUSP::SecondaryAttack(void)
 		AddViewKick();
 	}
 
-	m_flAccuracyPenalty += (USP_ACCURACY_PENALTY * USP_RAPID);
+	m_flAccuracyPenalty += USP_ACCURACY_PENALTY;
 
 	m_iSecondaryAttacks++;
 	gamestats->Event_WeaponFired(pOwner, false, GetClassname());
